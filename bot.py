@@ -249,8 +249,8 @@ async def GroupRecallOtherMessage(app:GraiaMiraiApplication,event:GroupMessage):
 
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#帮助"))])
 async def GroupMessageHelp(app:GraiaMiraiApplication,event:GroupMessage):
-    pass
-    app.sendFriendMessage(event.sender.group,MessageChain.create([
+    quoted=event.messageChain.get(Source)[0]
+    await app.sendFriendMessage(event.sender.group,MessageChain.create([
         Plain("支持的命令为:\n"),
         Plain("#睡眠套餐\n如果要为他人提供,使用@或者回复的方式,需要具有管理权限\n"),
         Plain("#添加进群答案 [答案]\n需要管理权限\n"),
@@ -264,8 +264,15 @@ async def GroupMessageHelp(app:GraiaMiraiApplication,event:GroupMessage):
         Plain("#更新入群词 ...\n被添加的内容会在新成员加入的时候发出\n"),
         Plain("#当前入群词\n查看当前群有新成员加入时发出的内容\n"),
         Plain("#神启 [内容]\n仅支持文字内容.不宜过长.由 https://www.daanshu.com/ 提供答案.\n"),
-        Plain("#撤回\n用 #撤回 回复需要被撤回的内容,bot会尝试撤回对应内容,需要管理权限\n")
-    ]))
+        Plain("#撤回\n用 #撤回 回复需要被撤回的内容,bot会尝试撤回对应内容,需要管理权限\n"),
+    ]),quote=quoted)
+
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#关于"))])
+async def GroupAboutMessage(app:GraiaMiraiApplication,event:GroupMessage):
+    quoted=event.messageChain.get(Source)[0]
+    await app.sendGroupMessage(event.sender.group,MessageChain.create([
+        Plain("本项目基于AGPL 3.0协议\n项目地址：\nhttps://github.com/xlxyzzgzs/a-qqbot-based-graia")
+    ]),quote=quoted)
 
 @bcc.receiver("BotGroupPermissionChangeEvent")
 async def Group_Permission_Change(app:GraiaMiraiApplication,event:BotGroupPermissionChangeEvent):
