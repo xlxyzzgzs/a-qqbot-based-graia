@@ -37,10 +37,15 @@ def containElement(param:Union[InternalElement,ExternalElement])->callable:
 
 def strictPlainCommamd(param:str)->callable:
     def func(messageChain:MessageChain)->NoReturn:
-        p=messageChain.get(Plain)
-        if not p or not reduce(lambda a,b: a and b,map(lambda plain: plain.text.strip()==param or plain.text.strip()=='',p)):
-            raise ExecutionStop
-        #messageChain.__root__=(Plain('123'),)
+        plains=messageChain.get(Plain)
+        haved=False
+        for p in plains:
+            if p.text.strip()==param:
+                haved=True
+            elif p.text.strip():
+                raise ExecutionStop()
+        if not haved:
+            raise ExecutionStop()
     return func
 
 def regexPlain(param:str)->callable:
