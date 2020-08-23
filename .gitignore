@@ -1,4 +1,4 @@
 *.db
-.vscode
-__pycache__
+.vscode/
+__pycache__/
 config.py
