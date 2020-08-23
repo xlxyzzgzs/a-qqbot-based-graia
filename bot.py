@@ -19,17 +19,13 @@ from functools import reduce
 from sf_utils import *
 import json
 import requests
+from config import connection_config
 
 loop=asyncio.get_event_loop()
 bcc=Broadcast(loop=loop)
 app=GraiaMiraiApplication(
     broadcast=bcc,
-    connect_info=Session(
-        host="http://127.0.0.1:8080",
-        authKey="miraiSFUseToken",
-        account=3446444540,
-        websocket=True
-    )
+    connect_info=connection_config()
 )
 
 @bcc.receiver(ApplicationLaunched)
@@ -254,7 +250,22 @@ async def GroupRecallOtherMessage(app:GraiaMiraiApplication,event:GroupMessage):
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommamd("#帮助"))])
 async def GroupMessageHelp(app:GraiaMiraiApplication,event:GroupMessage):
     pass
-    app.getGroupConfig()
+    app.sendFriendMessage(event.sender.group,MessageChain.create([
+        Plain("支持的命令为:\n"),
+        Plain("#睡眠套餐\n如果要为他人提供,使用@或者回复的方式,需要具有管理权限\n"),
+        Plain("#添加进群答案 [答案]\n需要管理权限\n"),
+        Plain("#删除进群答案 [答案]\n需要管理权限\n"),
+        Plain("#可用进群答案\n展示现在允许的答案\n"),
+        Plain("#添加管理员 [@被添加的人]\n需要管理权限,可以同时添加多人\n"),
+        Plain("#解除管理员 [@被解除的人]\n需要管理权限,可以同事解除多人\n"),
+        Plain("#当前管理员\n以列出qq号的方式列出当前群在库中的管理员\n"),
+        Plain("#禁言 [禁言时间] [@被禁言的人]\n时间的单位是分钟,支持同时禁言多人,需要管理权限.\n"),
+        Plain("#解除禁言 [@被解除的人]\n需要管理权限,支持同时解除多人\n"),
+        Plain("#更新入群词 ...\n被添加的内容会在新成员加入的时候发出\n"),
+        Plain("#当前入群词\n查看当前群有新成员加入时发出的内容\n"),
+        Plain("#神启 [内容]\n仅支持文字内容.不宜过长.由 https://www.daanshu.com/ 提供答案.\n"),
+        Plain("#撤回\n用 #撤回 回复需要被撤回的内容,bot会尝试撤回对应内容,需要管理权限\n")
+    ]))
 
 @bcc.receiver("BotGroupPermissionChangeEvent")
 async def Group_Permission_Change(app:GraiaMiraiApplication,event:BotGroupPermissionChangeEvent):
