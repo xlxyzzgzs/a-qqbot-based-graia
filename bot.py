@@ -32,7 +32,7 @@ app=GraiaMiraiApplication(
 async def t1(app:GraiaMiraiApplication):
     await InitGroupDataBase(app)
 
-@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommamd('#睡眠套餐')),])
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand('#睡眠套餐')),])
 async def Group_Member_Sleep(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
     group=event.sender.group
@@ -95,7 +95,7 @@ async def GroupDeleteAnswer(app:GraiaMiraiApplication,event:GroupMessage,regexRe
             Plain("答案删除成功")
         ]),quote=quoted)
 
-@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommamd("#可用进群答案"))])
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#可用进群答案"))])
 async def GroupAllowAnswer(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
     answer=GetAllFromGroupDB(event.sender.group,"GroupAnswer","Answer")
@@ -105,7 +105,7 @@ async def GroupAllowAnswer(app:GraiaMiraiApplication,event:GroupMessage):
     ]),quote=quoted)
 
 
-@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommamd('#添加管理员'))])
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand('#添加管理员'))])
 async def GroupAddAdmin(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
     if not await checkMemberPermission(app,event.sender,[MemberPerm.Administrator,MemberPerm.Owner],quoted):
@@ -124,7 +124,7 @@ async def GroupAddAdmin(app:GraiaMiraiApplication,event:GroupMessage):
         Plain("\n以下成员获取权限失败:\n"),*fail_result
     ]),quote=quoted)
 
-@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommamd('#解除管理员'))])
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand('#解除管理员'))])
 async def GroupRemoveAdmin(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
     if not await checkMemberPermission(app,event.sender,[MemberPerm.Administrator,MemberPerm.Owner],quoted):
@@ -143,7 +143,7 @@ async def GroupRemoveAdmin(app:GraiaMiraiApplication,event:GroupMessage):
         Plain("\n以下成员取消权限失败:\n"),*fail_result
     ]),quote=quoted)
 
-@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommamd("#当前管理员"))])
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#当前管理员"))])
 async def GroupAvailableAdmin(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
     admin=GetAllFromGroupDB(event.sender.group,"GroupPermission","AdminID")
@@ -169,7 +169,7 @@ async def Group_Mute_Member(app:GraiaMiraiApplication,event:GroupMessage,regexRe
     ]),quote=quoted)
 
 @bcc.receiver("GroupMessage")
-async def Group_UnMute_Member(app:GraiaMiraiApplication,event:GroupMessage,regexResult=Depend(strictPlainCommamd("#解除禁言"))):
+async def Group_UnMute_Member(app:GraiaMiraiApplication,event:GroupMessage,regexResult=Depend(strictPlainCommand("#解除禁言"))):
     quoted=event.messageChain.get(Source)[0]
     if not await checkMemberPermission(app,event.sender,[MemberPerm.Owner,MemberPerm.Administrator],quoted):
         return
@@ -197,7 +197,7 @@ async def GroupUpdateMemberJoinMessage(app:GraiaMiraiApplication,event:GroupMess
             Plain("入群词更新失败.")
         ]),quote=quoted)
 
-@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommamd("#当前入群词"))])
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#当前入群词"))])
 async def GroupNowMemberJoinMessage(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
     message=GetFromGroupInfoDB(event.sender.group,"MemberJoinMessage")
@@ -225,7 +225,7 @@ async def Group_Ask_Daanshu(app:GraiaMiraiApplication,event:GroupMessage,regexRe
         Plain(parser.result.strip())
     ]),quote=queted)
 
-@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommamd("#撤回"))])
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#撤回"))])
 async def GroupRecallOtherMessage(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
     if not await checkMemberPermission(app,event.sender,[MemberPerm.Administrator,MemberPerm.Owner],quoted):
@@ -247,7 +247,7 @@ async def GroupRecallOtherMessage(app:GraiaMiraiApplication,event:GroupMessage):
         *([] if result else [Plain("\n记得撤回自己的消息")])
     ]),quote=quoted)
 
-@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommamd("#帮助"))])
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#帮助"))])
 async def GroupMessageHelp(app:GraiaMiraiApplication,event:GroupMessage):
     pass
     app.sendFriendMessage(event.sender.group,MessageChain.create([

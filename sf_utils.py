@@ -35,7 +35,7 @@ def containElement(param:Union[InternalElement,ExternalElement])->callable:
             raise ExecutionStop()
     return func
 
-def strictPlainCommamd(param:str)->callable:
+def strictPlainCommand(param:str)->callable:
     def func(messageChain:MessageChain)->NoReturn:
         plains=messageChain.get(Plain)
         haved=False
