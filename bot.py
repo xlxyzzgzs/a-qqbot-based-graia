@@ -67,10 +67,9 @@ async def GroupAddAnswer(app:GraiaMiraiApplication,event:GroupMessage,regexResul
     answer=regexResult.groups()[0]
     if not answer:
         return
-    InsertToGroupDB(event.sender.group,"GroupAnswer","Answer",answer)
-    if CheckIfInGroupDB(event.sender.group,"GroupAnswer","Answer",answer):
+    if InsertToGroupDB(event.sender.group,"GroupAnswer","Answer",answer):
         await app.sendGroupMessage(event.sender.group,MessageChain.create([
-            Plain("答案可能添加成功")
+            Plain("答案添加成功")
         ]),quote=quoted)
     else :
         await app.sendGroupMessage(event.sender.group,MessageChain.create([
@@ -85,14 +84,13 @@ async def GroupDeleteAnswer(app:GraiaMiraiApplication,event:GroupMessage,regexRe
     answer=regexResult.groups()[0]
     if not answer:
         return
-    DeleteFromGroupDB(event.sender.group,"GroupAnswer","Answer",answer)
-    if CheckIfInGroupDB(event.sender.group,"GroupAnswer","Answer",answer):
+    if DeleteFromGroupDB(event.sender.group,"GroupAnswer","Answer",answer):
         await app.sendGroupMessage(event.sender.group,MessageChain.create([
-            Plain("答案删除失败")
+            Plain("答案删除成功")
         ]),quote=quoted)
     else :
         await app.sendGroupMessage(event.sender.group,MessageChain.create([
-            Plain("答案删除成功")
+            Plain("答案删除失败")
         ]),quote=quoted)
 
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#可用进群答案"))])
@@ -114,8 +112,7 @@ async def GroupAddAdmin(app:GraiaMiraiApplication,event:GroupMessage):
     succ_result=[]
     fail_result=[]
     for i in target:
-        InsertToGroupDB(event.sender.group,'GroupPermission','AdminID',i)
-        if CheckIfInGroupDB(event.sender.group,'GroupPermission','AdminID',i):
+        if InsertToGroupDB(event.sender.group,'GroupPermission','AdminID',i):
             succ_result.append(At(i))
         else :
             fail_result.append(At(i))
@@ -133,11 +130,10 @@ async def GroupRemoveAdmin(app:GraiaMiraiApplication,event:GroupMessage):
     succ_result=[]
     fail_result=[]
     for i in target:
-        DeleteFromGroupDB(event.sender.group,'GroupPermission','AdminID',i)
-        if CheckIfInGroupDB(event.sender.group,'GroupPermission','AdminID',i):
-            fail_result.append(At(i))
-        else :
+        if DeleteFromGroupDB(event.sender.group,'GroupPermission','AdminID',i):
             succ_result.append(At(i))
+        else :
+            fail_result.append(At(i))
     await app.sendGroupMessage(event.sender.group,MessageChain.create([
         Plain("操作完成\n以下成员取消权限成功:\n"),*succ_result,
         Plain("\n以下成员取消权限失败:\n"),*fail_result
@@ -187,8 +183,7 @@ async def GroupUpdateMemberJoinMessage(app:GraiaMiraiApplication,event:GroupMess
     if not await checkMemberPermission(app,event.sender,[MemberPerm.Administrator,MemberPerm.Owner],quoted):
         return
     result= await MessageChainToStr(event.messageChain,"#更新入群词")
-    UpdateGroupInfoDB(event.sender.group,"MemberJoinMessage",result)
-    if GetFromGroupInfoDB(event.sender.group,"MemberJoinMessage")==result:
+    if UpdateGroupInfoDB(event.sender.group,"MemberJoinMessage",result):
         await app.sendGroupMessage(event.sender.group,MessageChain.create([
             Plain("入群词更新成功.")
         ]),quote=quoted)
@@ -209,6 +204,28 @@ async def GroupNowMemberJoinMessage(app:GraiaMiraiApplication,event:GroupMessage
         ])
     await app.sendGroupMessage(event.sender.group,message,quote=quoted)
 
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(startWith("#添加群语录"))])
+async def GroupAddSentence(app:GraiaMiraiApplication,event:GroupMessage):
+    quoted=event.messageChain.get(Source)[0]
+    message= await MessageChainToStr(event.messageChain,"#更新入群词")
+    SentenceID=GetFromGroupInfoDB(event.sender.group,"SentenceID")
+    SentenceID+=1
+    reply=[]
+    if InsertGroupSentenceIntoDB(event.sender.group,message,SentenceID):
+        if UpdateGroupInfoDB(event.sender.group,"SentenceID",SentenceID):
+            reply=[Plain(f"语录插入成功,ID为{SentenceID}")]
+        else :
+            if not DeleteSentenceById(event.sender.group,SentenceID):
+                reply=[Plain("发生了某些未知问题,建议去寻找管理")]
+    else:
+        reply=[Plain("语录插入失败")]
+    await app.sendGroupMessage(event.sender.group,MessageChain.create(*reply),quote=quoted)
+'''
+@bcc.receiver("GroupMessage")
+async def GroupShowSentence(app:GraiaMiraiApplication,event:GroupMessage,regexResult=Depend(regexPlain(r"^#群语录[\s]*([\d]*)$"))):
+    quoted=event.messageChain.get(Source)[0]
+    SentenceID=int(regexResult.groups()[0])
+'''
 @bcc.receiver("GroupMessage")
 async def Group_Ask_Daanshu(app:GraiaMiraiApplication,event:GroupMessage,regexResult=Depend(regexPlain(r"^#神启[\s]*([^\s]*)$"))):
     queted=event.messageChain.get(Source)[0]
@@ -307,6 +324,7 @@ async def Bot_Join_Group(app:GraiaMiraiApplication,event:BotJoinGroupEvent):
     await app.sendGroupMessage(event.group,MessageChain.create([
         Plain("引入了新的机器人时要小心命令冲突哦!")
     ]))
+    InsertNewGroupToGroupInfoDB(event.group)
 
 @bcc.receiver("GroupNameChangeEvent")
 async def Group_Name_Change(app:GraiaMiraiApplication,event:GroupNameChangeEvent):
@@ -378,7 +396,8 @@ async def Group_Member_Join(app:GraiaMiraiApplication,event:MemberJoinEvent):
 async def Member_Join_Request(app:GraiaMiraiApplication,event:MemberJoinRequestEvent):
     group=await app.getGroup(event.groupId)
     #if not BlockedInGroup(group,)
-    if not CheckIfInGroupDB(group,"GroupAnswer","Answer",event.message.strip()):
+    answer=event.message.strip().splitlines()[1][3:]
+    if not CheckIfInGroupDB(group,"GroupAnswer","Answer",answer):
         return
     await event.accept("答案看上去没啥大问题.")
     await app.sendGroupMessage(group,MessageChain.create([

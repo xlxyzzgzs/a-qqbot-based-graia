@@ -149,7 +149,8 @@ async def InitGroupDataBase(app:GraiaMiraiApplication)->bool:
             CREATE TABLE IF NOT EXISTS GroupInfo (
                 GroupID INTEGER PRIMARY KEY NOT NULL,
                 MemberJoinMessage TEXT,
-                LastCommandTime INTEGER NOT NULL
+                LastCommandTime INTEGER NOT NULL,
+                SentenceID INTEGER NOT NULL
             )
         ''')
         GroupList=await app.groupList()
@@ -161,8 +162,8 @@ async def InitGroupDataBase(app:GraiaMiraiApplication)->bool:
             if cursor.fetchone():
                 continue
             cursor.execute('''
-                INSERT INTO GroupInfo (GroupID,LastCommandTime) 
-                VALUES (?,0)
+                INSERT INTO GroupInfo (GroupID,LastCommandTime,SentenceID) 
+                VALUES (?,0,0)
             ''',(group.id,))
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS GroupAnswer (
@@ -200,21 +201,25 @@ async def InitGroupDataBase(app:GraiaMiraiApplication)->bool:
 
 
 
-def DeleteFromGroupDB(group:Group,table:str,paramName:str,param:str)->NoReturn:
+def DeleteFromGroupDB(group:Group,table:str,paramName:str,param:str)->bool:
     '''
     用来删除 进群答案,群管理 这俩个表中的数据的.
     '''
     conn=sqlite3.connect("GroupDB.db")
+    result=False
     try:
         cursor=conn.cursor()
         cursor.execute(f'''
             DELETE FROM {table} WHERE GroupID=? AND {paramName}=?
         ''',(group.id,paramName,param))
         conn.commit()
+        result=True
     except:
+        result=False
         conn.rollback()
     finally:
         conn.close()
+    return result
 
 def CheckIfInGroupDB(group:Group,table:str,paramName:str,param:Union[str,int])->bool:
     '''
@@ -252,13 +257,14 @@ def GetAllFromGroupDB(group:Group,table:str,paramName:str,param:Optional[Union[s
         conn.close()
     return result
 
-def InsertToGroupDB(group:Group,table:str,paramName:str,param:Union[str,int])->NoReturn:
+def InsertToGroupDB(group:Group,table:str,paramName:str,param:Union[str,int])->bool:
     '''
     用来向 进群答案,群管理 这俩个表中插入数据的.
     '''
     if CheckIfInGroupDB(group,table,paramName,param):
-        return 
+        return True
     conn=sqlite3.connect("GroupDB.db")
+    result=False
     try:
         cursor=conn.cursor()
         cursor.execute(f'''
@@ -266,16 +272,20 @@ def InsertToGroupDB(group:Group,table:str,paramName:str,param:Union[str,int])->N
             VALUES (?,?)
         ''',(group.id,param))
         conn.commit()
+        result=True
     except:
+        result=False
         conn.rollback()
     finally:
         conn.close()
+    return result
 
-def UpdateGroupInfoDB(group:Group,paramName:str,param:Union[str,int])->NoReturn:
+def UpdateGroupInfoDB(group:Group,paramName:str,param:Union[str,int])->bool:
     '''
     更新 GroupInfo 表中的数据
     '''
     conn=sqlite3.connect('GroupDB.db')
+    result=False
     try:
         cursor=conn.cursor()
         cursor.execute(f'''
@@ -284,10 +294,13 @@ def UpdateGroupInfoDB(group:Group,paramName:str,param:Union[str,int])->NoReturn:
             WHERE GroupID=?
         ''',(param,group.id))
         conn.commit()
+        result=True
     except:
+        result=False
         conn.rollback()
     finally:
         conn.close()
+    return result
 
 def GetFromGroupInfoDB(group:Group,paramName:str)->Optional[Union[str,int]]:
     '''
@@ -301,12 +314,42 @@ def GetFromGroupInfoDB(group:Group,paramName:str)->Optional[Union[str,int]]:
             SELECT {paramName} FROM GroupInfo WHERE GroupID=?
         ''',(group.id,))
         result=cursor.fetchone()
+        if result==None:
+            cursor.execute(f'''
+                INSERT INTO GroupInfo (GroupID,LastCommandTime,SentenceID)
+                VALUES (?,0,0)
+            ''',group.id)
+            conn.commit()
+            cursor.execute(f'''
+                SELECT {paramName} FROM GroupInfo WHERE GroupID=?
+            ''',(group.id,))
+            result=cursor.fetchone()
     except Exception as e:
         conn.rollback()
     finally:
         conn.close()
     return result[0]
 
+def InsertNewGroupToGroupInfoDB(group:Group)->bool:
+    '''
+    向 GroupInfo中插入新项
+    '''
+    conn=sqlite3.connect("GroupDB.db")
+    result=False
+    try:
+        cursor=conn.cursor()
+        cursor.execute(f'''
+            INSERT INTO GroupInfo (GroupID,LastCommandTime,SentenceID)
+            VALUES (?,0,0)
+        ''',(group.id,))
+        conn.commit()
+        result=True
+    except:
+        result=False
+        conn.rollback()
+    finally:
+        conn.close()
+    return result
 
 def GetMemberStatusFromGrouBlockDB(group:Group,target:Member,paramName:str)->int:
     conn=sqlite3.connect("GroupDB.db")
@@ -330,8 +373,9 @@ def GetMemberStatusFromGrouBlockDB(group:Group,target:Member,paramName:str)->int
         conn.close()
     return result[0] if result else 0
 
-def InsertMemberStatusToGroupBlockDB(group:Group,target:Member,paramName:str,param:int):
+def InsertMemberStatusToGroupBlockDB(group:Group,target:Member,paramName:str,param:int)->bool:
     conn=sqlite3.connect("GroupDB.db")
+    result=False
     try:
         cursor=conn.cursor()
         cursor.execute(f'''
@@ -340,10 +384,80 @@ def InsertMemberStatusToGroupBlockDB(group:Group,target:Member,paramName:str,par
             WHERE GroupID=?,BlockID=?
         ''',(param,group.id,target.id))
         conn.commit()
+        result=True
+    except:
+        result=False
+        conn.rollback()
+    finally:
+        conn.close()
+    return result     
+
+def InsertGroupSentenceIntoDB(group:Group,Sentence:str,SentenceID:int)->bool:
+    conn=sqlite3.connect("GroupDB.db")
+    result=False
+    try:
+        cursor=conn.cursor()
+        cursor.execute(f'''
+            INSERT INTO GroupSentence (GroupID,Sentence,SentenceID)
+            VALUES (?,?,?)
+        ''',(group.id,Sentence,SentenceID))
+        conn.commit()
+        result=True
+    except:
+        result=False
+        conn.rollback()
+    finally:
+        conn.close()
+    return result
+
+def GetSentenceFromDBById(group:Group,SentenceID:int)->Optional[str]:
+    conn=sqlite3.connect("GroupDB.db")
+    result=None
+    try:
+        cursor=conn.cursor()
+        cursor.execute(f'''
+            SELECT Sentence FROM GroupSentence
+            WHERE GroupID=? AND SentenceID=?
+        ''',(group.id,SentenceID))
+        result=cursor.fetchone()
     except:
         conn.rollback()
     finally:
-        conn.close()     
+        conn.close()
+    return result[0] if result else None
+
+def DeleteSentenceById(group:Group,SentenceID:int)->bool:
+    conn=sqlite3.connect("GroupDB.db")
+    result=False
+    try:
+        cursor=conn.cursor()
+        cursor.execute(f'''
+            DELETE FROM GroupSentence WHERE GroupID=? AND SentenceID=?
+        ''',(group.id,SentenceID))
+        conn.commit()
+        result=True
+    except:
+        result=False
+        conn.rollback()
+    finally:
+        conn.close()
+    return result
+
+def GetAllFromGroupSentenceDB(group:Group)->List[Optional[Tuple[int,str]]]:
+    conn=sqlite3.connect("GroupDB.db")
+    result=[]
+    try:
+        cursor=conn.cursor()
+        cursor.execute(f'''
+            SELECT SentenceID,Sentence From GroupSentence
+            WHERE GroupID=?
+        ''',group.id)
+        result=cursor.fetchall()
+    except:
+        conn.rollback()
+    finally:
+        conn.close()
+    return result
 
 async def MessageChainToStr(messageChain:MessageChain,skipStrInPlain:Optional[str]=None)->str:
     '''
