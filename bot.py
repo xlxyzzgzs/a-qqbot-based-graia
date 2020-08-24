@@ -197,7 +197,7 @@ async def GroupNowMemberJoinMessage(app:GraiaMiraiApplication,event:GroupMessage
     quoted=event.messageChain.get(Source)[0]
     message=GetFromGroupInfoDB(event.sender.group,"MemberJoinMessage")
     if message:
-        message=StrToMessageChain(message).asMutable()
+        message=StrToMessageChain(message)
     else :
         message=MessageChain.create([
             Plain("当前群没有入群词")
@@ -207,7 +207,7 @@ async def GroupNowMemberJoinMessage(app:GraiaMiraiApplication,event:GroupMessage
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(startWith("#添加群语录"))])
 async def GroupAddSentence(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
-    message= await MessageChainToStr(event.messageChain,"#更新入群词")
+    message= await MessageChainToStr(event.messageChain,"#添加群语录")
     SentenceID=GetFromGroupInfoDB(event.sender.group,"SentenceID")
     SentenceID+=1
     reply=[]
@@ -219,13 +219,36 @@ async def GroupAddSentence(app:GraiaMiraiApplication,event:GroupMessage):
                 reply=[Plain("发生了某些未知问题,建议去寻找管理")]
     else:
         reply=[Plain("语录插入失败")]
-    await app.sendGroupMessage(event.sender.group,MessageChain.create(*reply),quote=quoted)
-'''
+    await app.sendGroupMessage(event.sender.group,MessageChain.create(reply),quote=quoted)
+    
 @bcc.receiver("GroupMessage")
-async def GroupShowSentence(app:GraiaMiraiApplication,event:GroupMessage,regexResult=Depend(regexPlain(r"^#群语录[\s]*([\d]*)$"))):
+async def GroupShowSentence(app:GraiaMiraiApplication,event:GroupMessage,regexResult=Depend(regexPlain(r"^#群语录[\s]*([\d][\d]*)$"))):
     quoted=event.messageChain.get(Source)[0]
     SentenceID=int(regexResult.groups()[0])
-'''
+    result=GetSentenceFromDBById(event.sender.group,SentenceID)
+    if result:
+        result=StrToMessageChain(result)
+    else :
+        result=MessageChain.create([
+            Plain(f"ID为{SentenceID}的语录不存在")
+        ])
+    await app.sendGroupMessage(event.sender.group,result,quote=quoted)
+
+@bcc.receiver("GroupMessage")
+async def GroupDeleteMessage(app:GraiaMiraiApplication,event:GroupMessage,regexResult=Depend(regexPlain(r"^#删除语录[\s]*([\d]*)"))):
+    quoted=event.messageChain.get(Source)[0]
+    SentenceID=int(regexResult.groups()[0])
+    message=GetSentenceFromDBById(event.sender.group,SentenceID)
+    if message:
+        message=StrToMessageChain(message)
+    else:
+        message=MessageChain.create([])
+    if DeleteSentenceById(event.sender.group,SentenceID):
+        message.__root__.insert(0,Plain("语录删除成功,原内容为:\n"))
+    else :
+        message.__root__.insert(0,Plain("语录删除失败"))
+    await app.sendGroupMessage(event.sender.group,message,quote=quoted)
+
 @bcc.receiver("GroupMessage")
 async def Group_Ask_Daanshu(app:GraiaMiraiApplication,event:GroupMessage,regexResult=Depend(regexPlain(r"^#神启[\s]*([^\s]*)$"))):
     queted=event.messageChain.get(Source)[0]
@@ -387,7 +410,7 @@ async def Group_Member_Join(app:GraiaMiraiApplication,event:MemberJoinEvent):
     message=GetFromGroupInfoDB(event.member.group,"MemberJoinMessage")
     if not message:
         return 
-    message=StrToMessageChain(message).asMutable()
+    message=StrToMessageChain(message)
     message.__root__.insert(0,At(event.member))
     await app.sendGroupMessage(event.member.group,message)
 

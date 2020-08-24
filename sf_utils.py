@@ -474,7 +474,7 @@ def StrToMessageChain(origin:str)->MessageChain:
     '''
     将 str 转成 MessageChain
     '''
-    return MessageChain.parse_obj(json.loads(origin))
+    return MessageChain.parse_obj(json.loads(origin)).asMutable()
 
 class daanshuHtmlParser(HTMLParser):
     def __init__(self):
