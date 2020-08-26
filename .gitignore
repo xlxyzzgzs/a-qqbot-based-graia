@@ -1,4 +1,5 @@
 *.db
 .vscode/
 __pycache__/
+musicbox/
 config.py

@@ -1,25 +1,21 @@
-from graia.component import Components
 from graia.application.entry import *
 from graia.broadcast import Broadcast
-from graia.application.entities import UploadMethods
-from graia.template import Template
 from graia.broadcast.builtin.decoraters import Depend
 from graia.broadcast.exceptions import ExecutionStop
 from graia.application.message.elements import InternalElement,ExternalElement
 from graia.application.event.lifecycle import *
 import asyncio
-from pathlib import Path
-import mysql.connector
-import mysql.connector.pooling
 from typing import *
 from datetime import *
-import time
 import random
 from functools import reduce
 from sf_utils import *
-import json
-import requests
+import httpx
 from config import connection_config
+from graia.application.interrupt import InterruptControl
+from graia.application.interrupt.interrupts import *
+from NeteaseCloudMusic import SearchSongsInNeteaseCloudMusic
+
 
 loop=asyncio.get_event_loop()
 bcc=Broadcast(loop=loop)
@@ -32,7 +28,7 @@ app=GraiaMiraiApplication(
 async def t1(app:GraiaMiraiApplication):
     await InitGroupDataBase(app)
 
-@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand('#睡眠套餐')),])
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand('#睡眠套餐'))])
 async def Group_Member_Sleep(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
     group=event.sender.group
@@ -257,13 +253,27 @@ async def Group_Ask_Daanshu(app:GraiaMiraiApplication,event:GroupMessage,regexRe
     if not question:
         return 
     question={"text":question}
-    req=requests.post(url,data=question)
+    async with httpx.AsyncClient() as client:
+        r=await client.post(url,data=question)
     parser=daanshuHtmlParser()
-    parser.feed(req.text)
+    parser.feed(r.text)
     parser.close()
     await app.sendGroupMessage(event.sender.group,MessageChain.create([
         Plain(parser.result.strip())
     ]),quote=queted)
+
+@bcc.receiver("GroupMessage")
+async def GroupNeteaseMusic(app:GraiaMiraiApplication,event:GroupMessage,regexResult=Depend(regexPlain(r'^#网易云音乐[\s]*(.*)$'))):
+    quoted=event.messageChain.get(Source)[0]
+    key=regexResult.groups()[0].strip()
+    if not key:
+        return
+    content,jumpUrl,songUrl=await SearchSongsInNeteaseCloudMusic(key)
+    await app.sendGroupMessage(event.sender.group,MessageChain.create([
+        Plain(f"歌曲链接: {jumpUrl}\n音乐链接: {songUrl}"),
+        App(content=content)
+        ]),quote=quoted)
+        
 
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#撤回"))])
 async def GroupRecallOtherMessage(app:GraiaMiraiApplication,event:GroupMessage):
@@ -286,7 +296,16 @@ async def GroupRecallOtherMessage(app:GraiaMiraiApplication,event:GroupMessage):
         Plain("撤回消息成功"),
         *([] if result else [Plain("\n记得撤回自己的消息")])
     ]),quote=quoted)
-
+'''
+    @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#警告"))])
+    async def GroupWarnMember(app:GraiaMiraiApplication,event:GroupMessage):
+        quoted=event.messageChain.get(Source)[0]
+        if not await checkMemberPermission(app,event.sender,[MemberPerm.Administrator,MemberPerm.Owner],quoted):
+            return
+        target=getTargetFromAt(app,event.sender.group,event.messageChain)
+        for i in target:
+            GetMemberStatusFromGrouBlockDB(event.sender.group,)
+'''
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#帮助"))])
 async def GroupMessageHelp(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
@@ -424,7 +443,7 @@ async def Member_Join_Request(app:GraiaMiraiApplication,event:MemberJoinRequestE
         return
     await event.accept("答案看上去没啥大问题.")
     await app.sendGroupMessage(group,MessageChain.create([
-        Plain(event.nickname+"申请加群,答案为:"+event.message.strip()+"\n已通过")
+        Plain(event.nickname+"申请加群,答案为:"+answer+"\n已通过")
     ]))
 '''
 def func1():yitonggup
@@ -435,3 +454,4 @@ async def test(param=Depend(func1,cache=False)):
 '''
 
 app.launch_blocking()
+

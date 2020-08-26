@@ -1,16 +1,9 @@
-from graia.component import Components
 from graia.application.entry import *
 from graia.broadcast import Broadcast
-from graia.application.entities import UploadMethods
-from graia.template import Template
-from graia.broadcast.builtin.decoraters import Depend
 from graia.broadcast.exceptions import ExecutionStop
 from graia.application.message.elements import InternalElement,ExternalElement
 from graia.application.event.mirai import *
-import asyncio
-from pathlib import Path
 from typing import *
-from datetime import *
 import random
 from functools import reduce
 import re
@@ -108,8 +101,9 @@ async def muteMember(app:GraiaMiraiApplication,group:Group,target:Member,time:in
     if time <= 0 or time >= 43200 :
         time=random.randint(1,43199),
     try:
-        await app.mute(group,target,time*60)
+        await app.mute(group,target,int(time*60))
     except Exception as e:
+        print(e)
         return False
     return True
 
@@ -117,8 +111,6 @@ async def unMuteMember(app:GraiaMiraiApplication,group:Group,target:Member,quote
     #time is minute
     if not await checkBotPermission(app,group,[MemberPerm.Owner,*([MemberPerm.Administrator] if target.permission==MemberPerm.Member else [] )],quote):
         return False
-    if time <= 0 or time >= 43200 :
-        time=random.randint(1,43199),
     try:
         await app.unmute(group,target)
     except Exception as e:
@@ -493,5 +485,5 @@ class daanshuHtmlParser(HTMLParser):
             self.result=data
     
     def handle_endtag(self,tag):
-        if self._flags:
-            self._flags=""
+        self._flags=""
+
