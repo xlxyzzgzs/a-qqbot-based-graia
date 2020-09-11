@@ -15,22 +15,26 @@ import random
 from config import connection_config
 from daanshu import AskDaanshu
 from sf_utils import startWith,strictPlainCommand,StrToMessageChain,MessageChainToStr,muteMember,unMuteMember
-from sf_utils import regexPlain,checkMemberPermission,checkBotPermission,getTargetFromAt,GroupSettingChanged
+from sf_utils import regexPlain,checkMemberPermission,checkBotPermission,getTargetFromAt,GroupSettingChanged,kickMember
 from NeteaseCloudMusic import SearchSongsInNeteaseCloudMusic
 from database import InitGroupDataBase,InsertGroupSentenceIntoDB,InsertMemberStatusToGroupBlockDB
 from database import InsertToGroupDB,DeleteFromGroupDB,DeleteSentenceById,GetAllFromGroupDB
 from database import GetFromGroupInfoDB,GetMemberStatusFromGrouBlockDB,GetSentenceFromDBById
 from database import UpdateGroupInfoDB,CheckIfInGroupDB,InsertNewGroupToGroupInfoDB
 
+from pympler import tracker,summary,muppy
+#from vprof import runner
+
 loop=asyncio.get_event_loop()
 bcc=Broadcast(loop=loop)
 app=GraiaMiraiApplication(
     broadcast=bcc,
-    connect_info=connection_config()
+    connect_info=connection_config(),
+    enable_chat_log=False
 )
 
 @bcc.receiver(ApplicationLaunched)
-async def t1(app:GraiaMiraiApplication):
+async def InitDataBase(app:GraiaMiraiApplication):
     await InitGroupDataBase(app)
 
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand('#睡眠套餐'))])
@@ -294,16 +298,49 @@ async def GroupRecallOtherMessage(app:GraiaMiraiApplication,event:GroupMessage):
         Plain("撤回消息成功"),
         *([] if result else [Plain("\n记得撤回自己的消息")])
     ]),quote=quoted)
-'''
-    @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#警告"))])
-    async def GroupWarnMember(app:GraiaMiraiApplication,event:GroupMessage):
-        quoted=event.messageChain.get(Source)[0]
-        if not await checkMemberPermission(app,event.sender,[MemberPerm.Administrator,MemberPerm.Owner],quoted):
+
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#警告"))])
+async def GroupWarnMember(app:GraiaMiraiApplication,event:GroupMessage):
+    quoted=event.messageChain.get(Source)[0]
+    if not await checkMemberPermission(app,event.sender,[MemberPerm.Administrator,MemberPerm.Owner],quoted):
+        return
+    target=getTargetFromAt(app,event.sender.group,event.messageChain)
+    for i in target:
+        reply=[At(target=i.id)]
+        times=GetMemberStatusFromGrouBlockDB(app,event.sender.group,i,"Warn")
+        if times==None:
             return
-        target=getTargetFromAt(app,event.sender.group,event.messageChain)
-        for i in target:
-            GetMemberStatusFromGrouBlockDB(event.sender.group,)
-'''
+        times+=1
+        if not InsertMemberStatusToGroupBlockDB(app,event.sender.group,i,"Warn",times):
+            return
+        if times==1:
+            reply.append(Plain("第一次警告,注意群规."))
+        elif times==2:
+            reply.append(Plain("第二次警告,注意群规.关小黑屋1天."))
+            await muteMember(app,event.sender.group,i,24*60,quoted)
+        elif times==3:
+            reply.append(Plain("第三次警告,注意群规.关小黑屋一个月.下次直接飞机票."))
+            await muteMember(app,event.sender.group,i,30*24*60-1,quoted)
+        elif times==4:
+            reply.append(Plain("第四次警告,飞机票."))
+            await kickMember(app,event.sender.group,i,quoted)
+            block=GetMemberStatusFromGrouBlockDB(app,event.sender.group,i,"Blocked")
+            if block==None:
+                return
+            block+=1
+            if not InsertMemberStatusToGroupBlockDB(app,event.sender.group,i,"Blocked",block):
+                return
+        await app.sendGroupMessage(event.sender.group,MessageChain.create(reply))
+
+    await app.sendGroupMessage(event.sender.group,MessageChain.create([
+        Plain("操作完成")
+    ]),quote=quoted)
+
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#删除警告"))])
+async def GroupCancelWarnMember(app:GraiaMiraiApplication,event:GroupMessage):
+    qutoed=event.messageChain.get(Source)[0]
+    if not checkMemberPermission(app,event.sender,[MemberPerm.Administrator,MemberPerm.Owner],qutoed):
+        return
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#帮助"))])
 async def GroupMessageHelp(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Source)[0]
@@ -435,8 +472,8 @@ async def Group_Member_Join(app:GraiaMiraiApplication,event:MemberJoinEvent):
 @bcc.receiver("MemberJoinRequestEvent")
 async def Member_Join_Request(app:GraiaMiraiApplication,event:MemberJoinRequestEvent):
     group=await app.getGroup(event.groupId)
-    targer=Member(id=event.supplicant,group=group,permission=MemberPerm.Member,memberName=event.nickname)
-    if GetMemberStatusFromGrouBlockDB(app,group,targer,"Blocked"):
+    target=Member(id=event.supplicant,group=group,permission=MemberPerm.Member,memberName=event.nickname)
+    if GetMemberStatusFromGrouBlockDB(app,group,target,"Blocked"):
         await event.reject("你在群组的黑名单之中")
     answer=event.message.strip().splitlines()[1][3:]
     if not CheckIfInGroupDB(app,group,"GroupAnswer","Answer",answer):
@@ -452,6 +489,8 @@ def func1():yitonggup
 async def test(param=Depend(func1,cache=False)):
     pass
 '''
-
+#@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#测试中断"))])
+memory_tracker=tracker.SummaryTracker()
 app.launch_blocking()
 
+#runner.run(app.launch_blocking,"m",host="0.0.0.0",port=8000)

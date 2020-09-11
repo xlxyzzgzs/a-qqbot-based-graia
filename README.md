@@ -27,6 +27,6 @@ def connection_config():
 ```
 将上面的对应项修改成需要的,跟bot.py放在同一个目录
 
-网易云的查找借口来自 
+网易云的查找接口来自 
 项目链接 : https://github.com/darknessomi/musicbox/tree/master
 

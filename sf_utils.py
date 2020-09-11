@@ -103,11 +103,20 @@ async def muteMember(app:GraiaMiraiApplication,group:Group,target:Member,time:in
     return True
 
 async def unMuteMember(app:GraiaMiraiApplication,group:Group,target:Member,quote:Optional[Union[Source,int]]=None)->bool:
-    #time is minute
     if not await checkBotPermission(app,group,[MemberPerm.Owner,*([MemberPerm.Administrator] if target.permission==MemberPerm.Member else [] )],quote):
         return False
     try:
         await app.unmute(group,target)
+    except Exception as e:
+        app.logger.exception(e)
+        return False
+    return True
+
+async def kickMember(app:GraiaMiraiApplication,group:Group,target:Member,quote:Optional[Union[Source,int]]=None)->bool:
+    if not await checkBotPermission(app,group,[MemberPerm.Owner,*([MemberPerm.Administrator] if target.permission==MemberPerm.Member else [] )],quote):
+        return False
+    try:
+        await app.kick(group,target)
     except Exception as e:
         app.logger.exception(e)
         return False
@@ -134,7 +143,7 @@ async def MessageChainToStr(messageChain:MessageChain,skipStrInPlain:Optional[st
     result=result.dict()['__root__']
     for i in range(len(result)):
         if result[i]["type"]=='Plain' and skipStrInPlain:
-            result[i]["text"]=result[i]["text"].replace(skipStrInPlain,"").strip()
+            result[i]["text"]=result[i]["text"].replace(skipStrInPlain,"")
     return json.dumps(result)
 
 def StrToMessageChain(origin:str)->MessageChain:
