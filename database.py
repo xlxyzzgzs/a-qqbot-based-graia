@@ -2,7 +2,42 @@ import sqlite3
 from graia.application import GraiaMiraiApplication,Group,Member
 from typing import Union,List,Tuple,Optional
 from graia.application.group import MemberPerm
+'''
+GroupInfo :
+┌───────┬─────────────────┬───────────────┬──────────┐
+│GroupID│MemberJoinMessage│LastCommandTime│SentenceID│
+├───────┼─────────────────┼───────────────┼──────────┤
+│INTEGER│TEXT             │INTEGER        │TEXT      │
+└───────┴─────────────────┴───────────────┴──────────┘
 
+GroupAnswer :
+┌───────┬──────┐
+│GroupID│Answer│
+├───────┼──────┤
+│INTEGER│TEXT  │
+└───────┴──────┘
+
+GroupPermission :
+┌───────┬───────┐
+│GroupID│AdminID│
+├───────┼───────┤
+│INTEGER│INTEGER│
+└───────┴───────┘
+
+GroupSentence :
+┌───────┬───────────────────┐
+│GroupID│Sentence│SentenceID│
+├───────┼────────┼──────────┤
+│INTEGER│TEXT    │INTEGER   │
+└───────┴────────┴──────────┘
+
+GroupBlockList :
+┌───────┬───────┬───────┬───────┐
+│GroupID│BlockID│Warn   │Blocked│
+├───────┼───────┼───────┼───────┤
+│INTEGER│INTEGER│INTEGER│INTEGER│
+└───────┴───────┴───────┴───────┘
+'''
 async def InitGroupDataBase(app:GraiaMiraiApplication)->bool:
     '''
     初始化群组的数据库
