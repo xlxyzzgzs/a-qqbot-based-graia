@@ -364,7 +364,7 @@ async def GroupBlockMember(app:GraiaMiraiApplication,event:GroupMessage):
         if await kickMember(app,event.sender.group,i,quoted):
            succ.append(i.id)
     await app.sendGroupMessage(event.sender.group,MessageChain.create([
-        Plain(f"操作完成.被拉黑的对象为:\n{'\n'.join(succ)}")]))
+        Plain(f"操作完成.被拉黑的对象为:\n{' '.join(succ)}")]))
 
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#帮助"))])
 async def GroupMessageHelp(app:GraiaMiraiApplication,event:GroupMessage):
