@@ -22,6 +22,8 @@ from database import InsertToGroupDB,DeleteFromGroupDB,DeleteSentenceById,GetAll
 from database import GetFromGroupInfoDB,GetMemberStatusFromGrouBlockDB,GetSentenceFromDBById
 from database import UpdateGroupInfoDB,CheckIfInGroupDB,InsertNewGroupToGroupInfoDB
 
+from autoreply import QQButtonAutoReply,GenerateAutoReplyButton
+
 
 loop=asyncio.get_event_loop()
 bcc=Broadcast(loop=loop)
@@ -524,5 +526,26 @@ async def Member_Join_Request(app:GraiaMiraiApplication,event:MemberJoinRequestE
     await app.sendGroupMessage(group,MessageChain.create([
         Plain(event.nickname+"申请加群,答案为:"+answer+"\n已通过")
     ]))
+'''
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#新帮助"))])
+async def test_1(app:GraiaMiraiApplication,event:GroupMessage):
+    if event.sender.group.id==730455781:
+        await app.sendGroupMessage(event.sender.group,MessageChain.create([
+            App(content=GenerateAutoReplyButton("this","which",[
+                        QQButtonAutoReply(slot=1,action_data="test",name="test")#,
+                        #QQButtonAutoReply(slot=1,action_data="#可用进群答案",name="进群答案"),
+                        #QQButtonAutoReply(slot=1,action_data="#当前管理员",name="当前管理员")
+                    ]
+                )
+            )
+        ]))
 
+@bcc.receiver("GroupMessage")
+async def test(app:GraiaMiraiApplication,event:GroupMessage):
+    if event.sender.group.id==730455781:
+        app=event.messageChain.get(App)
+        if not app:
+            return 
+        print(app.content)
+'''
 app.launch_blocking()
