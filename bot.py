@@ -351,9 +351,11 @@ async def GroupCancelWarnMember(app:GraiaMiraiApplication,event:GroupMessage):
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#拉黑"))])
 async def GroupBlockMember(app:GraiaMiraiApplication,event:GroupMessage):
     quoted=event.messageChain.get(Quote)
+    if not await checkMemberPermission(app,event.sender,[MemberPerm.Administrator,MemberPerm.Owner],quoted):
+        return    
     if not checkBotPermission(app,event.sender.group,[MemberPerm.Owner,*([MemberPerm.Administrator] if event.sender.permission==MemberPerm.Member else [])],quoted):
         return
-    target=getTargetFromAt(event.messageChain.get(At))
+    target=getTargetFromAt(app,event.sender.group,event.messageChain.get(At))
     succ=[]
     for i in target:
         times=GetMemberStatusFromGrouBlockDB(app,event.sender.group,i,"Blocked")
@@ -365,6 +367,13 @@ async def GroupBlockMember(app:GraiaMiraiApplication,event:GroupMessage):
            succ.append(i.id)
     await app.sendGroupMessage(event.sender.group,MessageChain.create([
         Plain(f"操作完成.被拉黑的对象为:\n{' '.join(succ)}")]))
+
+@bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#解除拉黑"))])
+async def GroupUnBlock(app:GraiaMiraiApplication,event:GroupMessage):
+    quoted=event.messageChain.get(Source)
+    if not checkMemberPermission(app,event.sender,[MemberPerm.Administrator,MemberPerm.Owner],quoted):
+        return 
+    
 
 @bcc.receiver("GroupMessage",headless_decoraters=[Depend(strictPlainCommand("#帮助"))])
 async def GroupMessageHelp(app:GraiaMiraiApplication,event:GroupMessage):
