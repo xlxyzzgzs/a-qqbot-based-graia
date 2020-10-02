@@ -1,5 +1,5 @@
 from graia.application.entry import GraiaMiraiApplication,GroupMessage,MessageChain,App,Quote,Source,At
-from graia.application.entry import Plain,MemberPerm,Member
+from graia.application.entry import Plain,MemberPerm,Member,FlashImage
 from graia.application.entry import BotGroupPermissionChangeEvent,BotJoinGroupEvent,GroupNameChangeEvent
 from graia.application.entry import GroupMuteAllEvent,GroupAllowAnonymousChatEvent,GroupAllowConfessTalkEvent
 from graia.application.entry import MemberJoinEvent,MemberJoinRequestEvent,GroupEntranceAnnouncementChangeEvent
@@ -14,7 +14,7 @@ import random
 
 from config import connection_config
 from daanshu import AskDaanshu
-from sf_utils import startWith,strictPlainCommand,StrToMessageChain,MessageChainToStr,muteMember,unMuteMember
+from sf_utils import startWith,strictPlainCommand,StrToMessageChain,MessageChainToStr,muteMember,unMuteMember,getElements
 from sf_utils import regexPlain,checkMemberPermission,checkBotPermission,getTargetFromAt,GroupSettingChanged,kickMember
 from NeteaseCloudMusic import SearchSongsInNeteaseCloudMusic
 from database import InitGroupDataBase,InsertGroupSentenceIntoDB,InsertMemberStatusToGroupBlockDB
@@ -24,6 +24,8 @@ from database import UpdateGroupInfoDB,CheckIfInGroupDB,InsertNewGroupToGroupInf
 
 from autoreply import QQButtonAutoReply,GenerateAutoReplyButton
 
+import json
+import re
 
 loop=asyncio.get_event_loop()
 bcc=Broadcast(loop=loop)
@@ -417,6 +419,18 @@ async def GroupAboutMessage(app:GraiaMiraiApplication,event:GroupMessage):
         Plain("本项目基于AGPL 3.0协议\n项目地址：\nhttps://github.com/xlxyzzgzs/a-qqbot-based-graia")
     ]),quote=quoted)
 
+@bcc.receiver("GroupMessage")
+async def GroupBilibiliMessageToUrl(app:GraiaMiraiApplication,event:GroupMessage,target=Depend(getElements(App))):
+    try :
+        url=json.loads(event.messageChain.get(App)[0].content)['meta']['detail_1']['qqdocurl']
+        url=re.search("^[^\?]*",url).group(0)
+        if url:
+            await app.sendGroupMessage(event.sender.group,MessageChain.create([
+                Plain(url)
+            ]))
+    except Exception as e:
+        app.logger.exception(e)
+    
 @bcc.receiver("BotGroupPermissionChangeEvent")
 async def Group_Permission_Change(app:GraiaMiraiApplication,event:BotGroupPermissionChangeEvent):
     if event.origin==event.current:
@@ -548,4 +562,5 @@ async def test(app:GraiaMiraiApplication,event:GroupMessage):
             return 
         print(app.content)
 '''
+
 app.launch_blocking()

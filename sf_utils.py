@@ -1,5 +1,5 @@
 from graia.application.entry import GraiaMiraiApplication,MessageChain,MemberPerm,Plain,Group,Source,Member,At
-from graia.broadcast import Broadcast
+from graia.broadcast import Broadcast,DispatcherInterface
 from graia.broadcast.exceptions import ExecutionStop
 from graia.application.message.elements import InternalElement,ExternalElement
 from graia.application.event.mirai import MiraiEvent
@@ -11,6 +11,7 @@ import sqlite3
 import json
 
 from database import GetPermissionFromDB
+
 
 def At__Hash(self):
     return self.target
@@ -27,6 +28,14 @@ def containElement(param:Union[InternalElement,ExternalElement])->callable:
     def func(messageChain:MessageChain)->NoReturn:
         if not messageChain.get(param):
             raise ExecutionStop()
+    return func
+
+def getElements(param:Union[InternalElement,ExternalElement])->callable:
+    def func(messageChain:MessageChain)->NoReturn:
+        r=messageChain.get(param)
+        if not r:
+            raise ExecutionStop()
+        return r
     return func
 
 def strictPlainCommand(param:str)->callable:
