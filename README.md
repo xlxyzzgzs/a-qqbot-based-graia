@@ -13,18 +13,9 @@ pip install singledispatchmethod
 ```
 一个写的死烂的代码,就这样吧
 
-忽然想起来一个问题,bot.py引入了一个config.py 就放在这得了(不传github了
+忽然想起来一个问题,bot.py引入了一个config.py <br/>
+将config-example.py修改成你需要的样式，然后重命名为config.py
 
-```
-from graia.application.session import Session
-def connection_config():
-    return Session(
-        host='host:port',       #你mirai-api-http监听的地址以及端口
-        authKey='authToken',    #在mirai-api-http设置的authKey
-        account=123456789,      #要使用的对应的bot 的qq号
-        websocket=True          #记得在mirai-api-http里面设置开启websocket
-    ) 
-```
 将上面的对应项修改成需要的,跟bot.py放在同一个目录
 
 网易云的查找接口来自 
