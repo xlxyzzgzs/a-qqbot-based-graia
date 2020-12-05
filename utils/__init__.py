@@ -1,4 +1,5 @@
-from graia.application.entry import GraiaMiraiApplication,MessageChain,MemberPerm,Plain,Group,Source,Member,At
+from graia.application.entry import GraiaMiraiApplication,MessageChain,MemberPerm,Plain,Group,Source,Member,At,GroupMessage,FriendMessage,TempMessage
+from graia.application.entry import Friend
 from graia.broadcast import Broadcast,DispatcherInterface
 from graia.broadcast.exceptions import ExecutionStop
 from graia.application.message.elements import InternalElement,ExternalElement
@@ -99,4 +100,16 @@ async def GroupSettingChanged(app:GraiaMiraiApplication,event:MiraiEvent,
     elif invalid:
         await app.sendGroupMessage(event.group,invalid)
 
-
+async def SendToTarget(app:GraiaMiraiApplication,
+    target:Union[Member,Friend],
+    sendType:Union[GroupMessage,FriendMessage,TempMessage],
+    message:MessageChain,
+    quote:Optional[Union[Source,int]]=None):
+    if sendType is GroupMessage:
+        await app.sendGroupMessage(target.group,message,quote=quote)
+    elif sendType is TempMessage:
+        await app.sendTempMessage(target.group,target,message,quote=quote)
+    elif sendType is FriendMessage:
+        await app.sendFriendMessage(target,message,quote=quote)
+    else :
+        raise SyntaxError("Event Type Error")
