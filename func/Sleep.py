@@ -4,7 +4,7 @@ from graia.broadcast import Broadcast
 from datetime import datetime
 from typing import Union
 import random
-from utils.sf_utils import muteMember,getTargetFromAt
+from utils import muteMember,getTargetFromAt
 from utils.messageTrigger import strictPlainCommand
 from utils.checkPermission import checkMemberPermission
 def GenerateSleepTime():

@@ -9,8 +9,8 @@ from functools import reduce
 import re
 import json
 
-from database import GetPermissionFromDB
-from checkPermission import checkBotPermission
+from .database import GetPermissionFromDB
+from .checkPermission import checkBotPermission
 
 
 def At__Hash(self):

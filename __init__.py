@@ -1,16 +1,20 @@
 from graia.application.entry import GraiaMiraiApplication
 from graia.broadcast import Broadcast
+from graia.broadcast.interrupt import InterruptControl
 import asyncio
 from config import connection_config
-from func.AddListener import AddListener
+from func import AddListener
+import utils.interrupt as Interrupt
 loop=asyncio.get_event_loop()
 bcc=Broadcast(loop=loop)
 app=GraiaMiraiApplication(
     broadcast=bcc,
     connect_info=connection_config(),
-    enable_chat_log=False
+    enable_chat_log=True,
+    debug=True
 )
 
+Interrupt.InitInterruptControl(bcc)
 AddListener(bcc)
 
 '''

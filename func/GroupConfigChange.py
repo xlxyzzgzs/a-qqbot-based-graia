@@ -2,7 +2,7 @@ from graia.application.entry import GraiaMiraiApplication,BotGroupPermissionChan
 from graia.application.entry import GroupNameChangeEvent,GroupEntranceAnnouncementChangeEvent,GroupMuteAllEvent
 from graia.application.entry import GroupAllowAnonymousChatEvent,GroupAllowConfessTalkEvent,MemberPerm
 from graia.broadcast import Broadcast
-from utils.sf_utils import GroupSettingChanged
+from utils import GroupSettingChanged
 
 async def GroupPermissionChange(app:GraiaMiraiApplication,event:BotGroupPermissionChangeEvent):
     if event.origin==event.current:

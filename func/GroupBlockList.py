@@ -3,7 +3,7 @@ from graia.application.entry import MessageChain,At,Quote
 from graia.broadcast import Broadcast
 from utils.checkPermission import checkBotPermission,checkMemberPermission
 from utils.database import GetMemberStatusFromGrouBlockDB,InsertMemberStatusToGroupBlockDB
-from utils.sf_utils import getTargetFromAt,muteMember,kickMember
+from utils import getTargetFromAt,muteMember,kickMember
 from utils.messageTrigger import strictPlainCommand,regexPlain
 import re
 
@@ -96,7 +96,7 @@ async def GroupUnBlockMember(app:GraiaMiraiApplication,event:GroupMessage,regexR
 
     
 
-def AddGroupBlockList(bcc:Broadcast):
+def AddGroupBlockListListener(bcc:Broadcast):
     bcc.receiver("GroupMessage",headless_decoraters=[strictPlainCommand("#警告")])(GroupWarnMember)
     bcc.receiver("GroupMessage",headless_decoraters=[strictPlainCommand("#删除警告")])(GroupCancelWarnMember)
     bcc.receiver("GroupMessage",headless_decoraters=[strictPlainCommand("#拉黑")])(GroupBlockMember)

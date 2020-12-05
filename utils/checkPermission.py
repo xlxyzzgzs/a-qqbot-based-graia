@@ -1,6 +1,6 @@
 from graia.application.entry import GraiaMiraiApplication,Group,Source,Member,MemberPerm,Plain,MessageChain
 from typing import List,Optional,Union
-from database import GetPermissionFromDB
+from .database import GetPermissionFromDB
 from config import BotAdmin,BotMaster
 async def checkBotPermission(app:GraiaMiraiApplication,group:Group,needPermission:List[MemberPerm],quote:Optional[Union[Source,int]]=None)->bool:
     PermissionDict={

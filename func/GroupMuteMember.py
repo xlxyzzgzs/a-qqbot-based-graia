@@ -3,7 +3,7 @@ from graia.application.entry import Plain
 from graia.broadcast import Broadcast
 from utils.messageTrigger import regexPlain,strictPlainCommand
 from utils.checkPermission import checkMemberPermission
-from utils.sf_utils import muteMember,getTargetFromAt,unmuteMember,muteAll,unmuteAll
+from utils import muteMember,getTargetFromAt,unmuteMember,muteAll,unmuteAll
 
 async def GroupMuteMember(app:GraiaMiraiApplication,event:GroupMessage,regexResult=regexPlain(r'^#禁言[\s]*([\d]*)$')):
     sender=event.sender
@@ -56,4 +56,4 @@ def AddGroupMuteMemberListener(bcc:Broadcast):
     bcc.receiver("GroupMessage")(GroupMuteMember)
     bcc.receiver("GroupMessage",headless_decoraters=[strictPlainCommand("#解除禁言")])(GroupunmuteMember)
     bcc.receiver('GroupMessage',headless_decoraters=[strictPlainCommand("#全体禁言")])(GroupMuteAll)
-    bcc.receiver('GroupMessage',headless_decoraters=[strictPlainCommand("#解除全体禁言")])(GroupMuteAll)
+    bcc.receiver('GroupMessage',headless_decoraters=[strictPlainCommand("#解除全体禁言")])(GroupUnMuteAll)
