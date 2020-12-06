@@ -1,10 +1,10 @@
 from graia.application.entry import GraiaMiraiApplication
 from graia.broadcast import Broadcast
-from graia.broadcast.interrupt import InterruptControl
 import asyncio
 from config import connection_config
 from func import AddListener
 import utils.interrupt as Interrupt
+
 loop=asyncio.get_event_loop()
 bcc=Broadcast(loop=loop)
 app=GraiaMiraiApplication(
@@ -16,7 +16,6 @@ app=GraiaMiraiApplication(
 
 Interrupt.InitInterruptControl(bcc)
 AddListener(bcc)
-
 '''
 @bcc.receiver("GroupMessage")
 async def GroupNeteaseMusic(app:GraiaMiraiApplication,event:GroupMessage,regexResult=Depend(regexPlain(r'^#网易云音乐[\s]*(.*)$'))):
