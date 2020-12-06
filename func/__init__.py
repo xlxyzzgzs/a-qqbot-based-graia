@@ -13,7 +13,9 @@ from .InviteBot import AddInviteBotListener
 from .MemberJoin import AddMemberJoinEventListener
 from .recallMessage import AddRecallMessageListener
 from .Sleep import AddGroupSleepListener
-def AddListener(bcc:Broadcast):
+
+
+def AddListener(bcc: Broadcast):
     AddAnswerBookListener(bcc)
     AddBotHelpListener(bcc)
     AddGroupAdminListener(bcc)
