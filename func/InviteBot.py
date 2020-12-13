@@ -40,11 +40,11 @@ async def RequsetBotMaster(
             MessageChain.create(
                 [
                     Plain("有人邀请加群。\n"),
-                    Plain(f"请求事件ID: {event.requestId}"),
+                    Plain(f"请求事件ID: {event.requestId}\n"),
                     Plain(f"邀请人为: {event.supplicant}\n"),
                     Plain(f"邀请人称呼为: {event.nickname}\n"),
                     Plain(f"群号为: {event.groupId}\n"),
-                    Plain(f"群名称为: {event.groupName}"),
+                    Plain(f"群名称为: {event.groupName}\n"),
                     Plain(f"附加消息: {event.message}"),
                 ]
             ),

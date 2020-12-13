@@ -57,7 +57,7 @@ def AppToUrlAutoConvertGenerator(eventType: BaseEvent):
     ):
         url = AppMessageToUrl(target[0])
         if url:
-            SendToTarget(
+            await SendToTarget(
                 app, event.sender, eventType, MessageChain.create([Plain(url)])
             )
 
@@ -67,7 +67,7 @@ def AppToUrlAutoConvertGenerator(eventType: BaseEvent):
 def MessageAppToUrlGenerator(eventType: BaseEvent):
     async def func(app: GraiaMiraiApplication, event: eventType):
         quoted = event.messageChain.get(Source)[0]
-        SendToTarget(
+        await SendToTarget(
             app,
             event.sender,
             eventType,
@@ -90,7 +90,7 @@ def MessageAppToUrlGenerator(eventType: BaseEvent):
         url = AppMessageToUrl(message)
         if not url:
             url = "没找到合适的链接"
-        SendToTarget(
+        await SendToTarget(
             app,
             event.sender,
             eventType,
