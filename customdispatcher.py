@@ -39,4 +39,5 @@ class CustomDispatcher(BaseDispatcher):
             elif result_is_asyncgen(result):
                 async for i in result:
                     yield Force(i)
-        yield Force(result)
+        else :
+            yield Force(result)
