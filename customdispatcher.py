@@ -19,7 +19,7 @@ class CustomDispatcher(BaseDispatcher):
             return
         elif self.target_annotation and self.target_annotation != interface.annotation:
             return
-        elif not(self.target_name and self.target_annotation):
+        elif not self.target_name and not self.target_annotation:
             return
         result = await interface.broadcast.Executor(
             target=self.custom_function,
@@ -39,4 +39,4 @@ class CustomDispatcher(BaseDispatcher):
             elif result_is_asyncgen(result):
                 async for i in result:
                     yield Force(i)
-        yield result
+        yield Force(result)
