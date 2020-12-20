@@ -252,11 +252,13 @@ def InsertToGroupDB(
 
 
 def UpdateGroupInfoDB(
-    app: GraiaMiraiApplication, group: Group, paramName: str, param: Union[str, int]
+    app: GraiaMiraiApplication, group: Union[Group, int], paramName: str, param: Union[str, int]
 ) -> bool:
     """
     更新 GroupInfo 表中的数据
     """
+    if isinstance(group, Group):
+        group = group.id
     conn = sqlite3.connect("GroupDB.db")
     result = False
     try:
@@ -267,7 +269,7 @@ def UpdateGroupInfoDB(
             {paramName}=? 
             WHERE GroupID=?
         """,
-            (param, group.id),
+            (param, group),
         )
         conn.commit()
         result = True
@@ -296,7 +298,7 @@ def GetFromGroupInfoDB(
             f"""
             SELECT {paramName} FROM GroupInfo WHERE GroupID=?
         """,
-            (group.id,),
+            (group,),
         )
         result = cursor.fetchone()
         if result == None:
@@ -312,7 +314,7 @@ def GetFromGroupInfoDB(
                 f"""
                 SELECT {paramName} FROM GroupInfo WHERE GroupID=?
             """,
-                (group.id,),
+                (group,),
             )
             result = cursor.fetchone()
     except Exception as e:
@@ -381,7 +383,7 @@ def GetMemberStatusFromGrouBlockDB(
                 INSERT INTO GroupBlockList (GroupID,BlockID,Warn,Blocked)
                 VALUES (?,?,0,0)
             """,
-                (group.id, target.id),
+                (group, target),
             )
             conn.commit()
     except Exception as e:
