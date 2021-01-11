@@ -5,16 +5,17 @@ from graia.application.entry import (
     Plain,
     App,
     Source,
+    FriendMessage,
+    TempMessage,
 )
-from graia.application.entry import FriendMessage, TempMessage
-from graia.application.event import BaseEvent
 from graia.broadcast import Broadcast
 from graia.broadcast.interrupt.waiter import Waiter
 import json
 import re
+from typing import Type
 from utils.messageTrigger import getElements, strictPlainCommand
 import utils.interrupt as Interrupt
-from utils import SendToTarget
+from utils import SendToTarget, MessageType
 
 
 def BilibiliMessageToUrl(message: App):
@@ -51,20 +52,21 @@ async def GroupBilibiliMessageToUrl(
         )
 
 
-def AppToUrlAutoConvertGenerator(eventType: BaseEvent):
+def AppToUrlAutoConvertGenerator(eventType: Type[MessageType]):
     async def func(
         app: GraiaMiraiApplication, event: eventType, target=getElements(App)
     ):
         url = AppMessageToUrl(target[0])
         if url:
-            await SendToTarget(
-                app, event.sender, eventType, MessageChain.create([Plain(url)])
-            )
+            print(url)
+            # await SendToTarget(
+            #    app, event.sender, eventType, MessageChain.create([Plain(url)])
+            # )
 
     return func
 
 
-def MessageAppToUrlGenerator(eventType: BaseEvent):
+def MessageAppToUrlGenerator(eventType: Type[MessageType]):
     async def func(app: GraiaMiraiApplication, event: eventType):
         quoted = event.messageChain.get(Source)[0]
         await SendToTarget(
@@ -75,16 +77,12 @@ def MessageAppToUrlGenerator(eventType: BaseEvent):
             quote=quoted,
         )
 
-        @Waiter.create_using_function([eventType])
+        @Waiter.create_using_function([eventType], using_decorators=[Interrupt.SendFromSameTarget(event, eventType)], block_propagation=True)
         async def waiter(wait_event: eventType):
-            if wait_event.sender.id == event.sender.id and (
-                not isinstance(wait_event, (GroupMessage, TempMessage))
-                or wait_event.sender.group.id == event.sender.group.id
-            ):
-                message = wait_event.messageChain.get(App)
-                if message:
-                    print(message[0])
-                    return message[0]
+            message = wait_event.messageChain.get(App)
+            if message:
+                print(message[0])
+                return message[0]
 
         message = await Interrupt.interruptcontrol.wait(waiter)
         url = AppMessageToUrl(message)

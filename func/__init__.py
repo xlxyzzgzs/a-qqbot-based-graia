@@ -3,7 +3,7 @@ from .AnswerBook import AddAnswerBookListener
 from .BotHelp import AddBotHelpListener
 from .GroupAdmin import AddGroupAdminListener
 from .GroupAnswer import AddGroupAnswerListener
-from .GroupAppMessageToUrl import AddAppToUrlListener
+from .AppMessageToUrl import AddAppToUrlListener
 from .GroupBlockList import AddGroupBlockListListener
 from .GroupConfigChange import AddGroupConfigChangeListener
 from .GroupMuteMember import AddGroupMuteMemberListener
@@ -13,6 +13,7 @@ from .InviteBot import AddInviteBotListener
 from .MemberJoin import AddMemberJoinEventListener
 from .recallMessage import AddRecallMessageListener
 from .Sleep import AddGroupSleepListener
+from .AnalyzeAppXmlJson import AddAnalyzeEventListener
 
 
 def AddListener(bcc: Broadcast):
@@ -30,4 +31,5 @@ def AddListener(bcc: Broadcast):
     AddMemberJoinEventListener(bcc)
     AddRecallMessageListener(bcc)
     AddGroupSleepListener(bcc)
+    AddAnalyzeEventListener(bcc)
     pass

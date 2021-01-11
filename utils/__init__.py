@@ -10,13 +10,13 @@ from graia.application.entry import (
     GroupMessage,
     FriendMessage,
     TempMessage,
+    Friend
 )
-from graia.application.entry import Friend
 from graia.broadcast import Broadcast, DispatcherInterface
 from graia.broadcast.exceptions import ExecutionStop
 from graia.application.message.elements import InternalElement, ExternalElement
 from graia.application.event.mirai import MiraiEvent
-from typing import Union, Optional, List, Tuple, NoReturn
+from typing import Union, Optional, List, Tuple, NoReturn, Type
 import random
 from functools import reduce
 import re
@@ -31,6 +31,8 @@ def At__Hash(self):
 
 
 At.__hash__ = At__Hash
+
+MessageType = Union[GroupMessage, FriendMessage, TempMessage]
 
 
 async def getTargetFromAt(
@@ -194,7 +196,7 @@ async def GroupSettingChanged(
 async def SendToTarget(
     app: GraiaMiraiApplication,
     target: Union[Member, Friend],
-    sendType: Union[GroupMessage, FriendMessage, TempMessage],
+    sendType: Type[Union[GroupMessage, FriendMessage, TempMessage]],
     message: MessageChain,
     quote: Optional[Union[Source, int]] = None,
 ):
