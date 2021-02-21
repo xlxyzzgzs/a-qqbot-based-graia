@@ -75,12 +75,12 @@ async def GroupUnMuteAll(app: GraiaMiraiApplication, event: GroupMessage):
 
 def AddGroupMuteMemberListener(bcc: Broadcast):
     bcc.receiver("GroupMessage")(GroupMuteMember)
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#解除禁言")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#解除禁言")])(
         GroupunmuteMember
     )
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#全体禁言")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#全体禁言")])(
         GroupMuteAll
     )
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#解除全体禁言")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#解除全体禁言")])(
         GroupUnMuteAll
     )

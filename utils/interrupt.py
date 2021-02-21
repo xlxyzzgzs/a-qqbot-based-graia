@@ -1,5 +1,5 @@
 from graia.application.entry import GroupMessage, TempMessage, FriendMessage
-from graia.broadcast.builtin.decoraters import Depend
+from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
 from graia.broadcast.interrupt import InterruptControl
 from graia.broadcast import Broadcast

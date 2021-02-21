@@ -39,7 +39,8 @@ async def GroupHelpMessage(app: GraiaMiraiApplication, event: GroupMessage):
                 Plain("#解除禁言 [@被解除的人]\n需要管理权限,支持同时解除多人\n"),
                 Plain("#更新入群词 ...\n被添加的内容会在新成员加入的时候发出\n"),
                 Plain("#当前入群词\n查看当前群有新成员加入时发出的内容\n"),
-                Plain("#神启 [内容]\n仅支持文字内容.不宜过长.由 https://www.daanshu.com/ 提供答案.\n"),
+                Plain(
+                    "#神启 [内容]\n仅支持文字内容.不宜过长.由 https://www.daanshu.com/ 提供答案.\n"),
                 Plain("#网易云音乐 [歌曲名]\n返回第一个搜索结果\n"),
                 Plain("#撤回\n用 #撤回 回复需要被撤回的内容,bot会尝试撤回对应内容,需要管理权限\n"),
             ]
@@ -76,9 +77,9 @@ async def GroupAboutMessage(app: GraiaMiraiApplication, event: GroupMessage):
 
 
 def AddBotHelpListener(bcc: Broadcast):
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#帮助")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#帮助")])(
         GroupHelpMessage
     )
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#关于")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#关于")])(
         GroupAboutMessage
     )

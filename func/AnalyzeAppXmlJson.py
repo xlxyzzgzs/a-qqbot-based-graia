@@ -44,9 +44,9 @@ def AnalyzeGenerator(eventType: Type[MessageType]):
 
 
 def AddAnalyzeEventListener(bcc: Broadcast):
-    bcc.receiver(GroupMessage, headless_decoraters=[
+    bcc.receiver(GroupMessage, headless_decorators=[
                  strictPlainCommand("#解析复杂消息")])(AnalyzeGenerator(GroupMessage))
-    bcc.receiver(FriendMessage, headless_decoraters=[
+    bcc.receiver(FriendMessage, headless_decorators=[
                  strictPlainCommand("#解析复杂消息")])(AnalyzeGenerator(FriendMessage))
-    bcc.receiver(TempMessage, headless_decoraters=[
+    bcc.receiver(TempMessage, headless_decorators=[
                  strictPlainCommand("#解析复杂消息")])(AnalyzeGenerator(TempMessage))

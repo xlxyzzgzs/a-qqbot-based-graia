@@ -33,7 +33,8 @@ async def GroupRecallOtherMessage(app: GraiaMiraiApplication, event: GroupMessag
     member = event.sender
     if event.sender.group.accountPerm in [
         MemberPerm.Owner,
-        *([MemberPerm.Administrator] if member.permission == MemberPerm.Member else []),
+        *([MemberPerm.Administrator] if member.permission ==
+          MemberPerm.Member else []),
     ]:
         await app.revokeMessage(event.messageChain.get(Source)[0])
         result = True
@@ -47,6 +48,6 @@ async def GroupRecallOtherMessage(app: GraiaMiraiApplication, event: GroupMessag
 
 
 def AddRecallMessageListener(bcc: Broadcast):
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#撤回")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#撤回")])(
         GroupRecallOtherMessage
     )

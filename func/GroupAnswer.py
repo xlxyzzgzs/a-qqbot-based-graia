@@ -69,7 +69,8 @@ async def GroupDeleteAnswer(
 
 async def GroupAllowAnswer(app: GraiaMiraiApplication, event: GroupMessage):
     quoted = event.messageChain.get(Source)[0]
-    answer = GetAllFromGroupDB(app, event.sender.group, "GroupAnswer", "Answer")
+    answer = GetAllFromGroupDB(
+        app, event.sender.group, "GroupAnswer", "Answer")
     answer = "\n".join(map(lambda ans: ans[0], answer))
     await app.sendGroupMessage(
         event.sender.group,
@@ -94,14 +95,15 @@ async def MemberJoinRequest(app: GraiaMiraiApplication, event: MemberJoinRequest
     await event.accept("答案看上去没啥大问题.")
     await app.sendGroupMessage(
         group,
-        MessageChain.create([Plain(event.nickname + "申请加群,答案为:" + answer + "\n已通过")]),
+        MessageChain.create(
+            [Plain(event.nickname + "申请加群,答案为:" + answer + "\n已通过")]),
     )
 
 
 def AddGroupAnswerListener(bcc: Broadcast):
     bcc.receiver("GroupMessage")(GroupAddAnswer)
     bcc.receiver("GroupMessage")(GroupDeleteAnswer)
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#可用进群答案")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#可用进群答案")])(
         GroupAllowAnswer
     )
     bcc.receiver("MemberJoinRequestEvent")(MemberJoinRequest)

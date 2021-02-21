@@ -53,9 +53,9 @@ async def GroupNowMemberJoinMessage(app: GraiaMiraiApplication, event: GroupMess
 
 def AddMemberJoinEventListener(bcc: Broadcast) -> None:
     bcc.receiver("MemberJoinEvent")(GroupMemberJoin)
-    bcc.receiver("GroupMessage", headless_decoraters=[startWith("#更新入群词")])(
+    bcc.receiver("GroupMessage", headless_decorators=[startWith("#更新入群词")])(
         GroupUpdateMemberJoinMessage
     )
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#当前入群词")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#当前入群词")])(
         GroupNowMemberJoinMessage
     )

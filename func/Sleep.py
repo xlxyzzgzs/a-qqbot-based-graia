@@ -37,12 +37,13 @@ async def Group_Member_Sleep(app: GraiaMiraiApplication, event: GroupMessage):
             break
         await app.sendGroupMessage(
             group,
-            MessageChain.create([At(i.id), Plain(f"\n你的睡眠套餐已到账,请查收.\n总时长为{delta}分钟")]),
+            MessageChain.create(
+                [At(i.id), Plain(f"\n你的睡眠套餐已到账,请查收.\n总时长为{delta}分钟")]),
             quote=(quoted if i == event.sender else {}),
         )
 
 
 def AddGroupSleepListener(bcc: Broadcast) -> None:
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#睡眠套餐")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#睡眠套餐")])(
         Group_Member_Sleep
     )

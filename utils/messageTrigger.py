@@ -1,7 +1,7 @@
 from graia.application.entry import MessageChain, Plain
 from graia.broadcast.exceptions import ExecutionStop
 from graia.application.message.elements import InternalElement, ExternalElement
-from graia.broadcast.builtin.decoraters import Depend
+from graia.broadcast.builtin.decorators import Depend
 from typing import NoReturn, Union
 from functools import reduce
 import re

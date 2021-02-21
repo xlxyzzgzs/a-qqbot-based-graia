@@ -26,7 +26,8 @@ async def GroupWarnMember(app: GraiaMiraiApplication, event: GroupMessage):
     target = getTargetFromAt(app, event.sender.group, event.messageChain)
     for i in target:
         reply = [At(target=i.id)]
-        times = GetMemberStatusFromGrouBlockDB(app, event.sender.group, i, "Warn")
+        times = GetMemberStatusFromGrouBlockDB(
+            app, event.sender.group, i, "Warn")
         if times == None:
             return
         times += 1
@@ -74,7 +75,8 @@ async def GroupCancelWarnMember(app: GraiaMiraiApplication, event: GroupMessage)
         if InsertMemberStatusToGroupBlockDB(app, event.sender.group, i, "Warn", 0):
             succ.append(At(i))
     await app.sendGroupMessage(
-        event.sender.group, MessageChain.create([Plain("操作完成.以下成员解除警告:\n"), *succ])
+        event.sender.group, MessageChain.create(
+            [Plain("操作完成.以下成员解除警告:\n"), *succ])
     )
 
 
@@ -98,10 +100,12 @@ async def GroupBlockMember(app: GraiaMiraiApplication, event: GroupMessage):
         quoted,
     ):
         return
-    target = getTargetFromAt(app, event.sender.group, event.messageChain.get(At))
+    target = getTargetFromAt(app, event.sender.group,
+                             event.messageChain.get(At))
     succ = []
     for i in target:
-        times = GetMemberStatusFromGrouBlockDB(app, event.sender.group, i, "Blocked")
+        times = GetMemberStatusFromGrouBlockDB(
+            app, event.sender.group, i, "Blocked")
         if times == None:
             return
         if not InsertMemberStatusToGroupBlockDB(
@@ -129,7 +133,8 @@ async def GroupUnBlockMember(
     target = re.findall(r"[\d]*", regexResult.match)
     succ = []
     for i in target:
-        times = GetMemberStatusFromGrouBlockDB(app, event.sender.group, i, "Blocked")
+        times = GetMemberStatusFromGrouBlockDB(
+            app, event.sender.group, i, "Blocked")
         if times == None:
             return
         if not InsertMemberStatusToGroupBlockDB(
@@ -144,15 +149,15 @@ async def GroupUnBlockMember(
 
 
 def AddGroupBlockListListener(bcc: Broadcast):
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#警告")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#警告")])(
         GroupWarnMember
     )
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#删除警告")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#删除警告")])(
         GroupCancelWarnMember
     )
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#拉黑")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#拉黑")])(
         GroupBlockMember
     )
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#解除拉黑")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#解除拉黑")])(
         GroupUnBlockMember
     )

@@ -254,11 +254,11 @@ async def AnswerBookTemp(app: GraiaMiraiApplication, event: TempMessage):
 
 def AddAnswerBookListener(bcc: Broadcast):
     bcc.receiver(
-        "GroupMessage", headless_decoraters=[regexPlain(r"^#神启[\s]*([^\s]*)$")]
+        "GroupMessage", headless_decorators=[regexPlain(r"^#神启[\s]*([^\s]*)$")]
     )(AnswerBookGroup)
     bcc.receiver(
-        "FriendMessage", headless_decoraters=[regexPlain(r"^#神启[\s]*([^\s]*)$")]
+        "FriendMessage", headless_decorators=[regexPlain(r"^#神启[\s]*([^\s]*)$")]
     )(AnswerBookFriend)
     bcc.receiver(
-        "TempMessage", headless_decoraters=[regexPlain(r"^#神启[\s]*([^\s]*)$")]
+        "TempMessage", headless_decorators=[regexPlain(r"^#神启[\s]*([^\s]*)$")]
     )(AnswerBookTemp)

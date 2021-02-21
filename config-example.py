@@ -12,3 +12,4 @@ def connection_config():
 
 BotMaster = [123456789]  # 在某些场合会有特权
 BotAdmin = [123465789]  # 在某些场合会有特权
+BotQQ = 3446444540

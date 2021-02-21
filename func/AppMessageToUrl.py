@@ -103,12 +103,12 @@ def AddAppToUrlListener(bcc: Broadcast):
     bcc.receiver("GroupMessage")(AppToUrlAutoConvertGenerator(GroupMessage))
     bcc.receiver("FriendMessage")(AppToUrlAutoConvertGenerator(FriendMessage))
     bcc.receiver("TempMessage")(AppToUrlAutoConvertGenerator(TempMessage))
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#提取App链接")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#提取App链接")])(
         MessageAppToUrlGenerator(GroupMessage)
     )
-    bcc.receiver("FriendMessage", headless_decoraters=[strictPlainCommand("#提取App链接")])(
+    bcc.receiver("FriendMessage", headless_decorators=[strictPlainCommand("#提取App链接")])(
         MessageAppToUrlGenerator(FriendMessage)
     )
-    bcc.receiver("TempMessage", headless_decoraters=[strictPlainCommand("#提取App链接")])(
+    bcc.receiver("TempMessage", headless_decorators=[strictPlainCommand("#提取App链接")])(
         MessageAppToUrlGenerator(TempMessage)
     )

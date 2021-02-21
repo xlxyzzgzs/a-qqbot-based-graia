@@ -84,11 +84,11 @@ async def GroupRandomSentence(app: GraiaMiraiApplication, event: GroupMessage):
 
 
 def AddGroupSentenceListener(bcc: Broadcast):
-    bcc.receiver("GroupMessage", headless_decoraters=[startWith("#添加群语录")])(
+    bcc.receiver("GroupMessage", headless_decorators=[startWith("#添加群语录")])(
         GroupAddSentence
     )
     bcc.receiver("GroupMessage")(GroupShowSentence)
     bcc.receiver("GroupMessage")(GroupDeleteSentence)
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#随机语录")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#随机语录")])(
         GroupRandomSentence
     )

@@ -70,7 +70,8 @@ async def GroupRemoveAdmin(app: GraiaMiraiApplication, event: GroupMessage):
 
 async def GroupAvailableAdmin(app: GraiaMiraiApplication, event: GroupMessage):
     quoted = event.messageChain.get(Source)[0]
-    admin = GetAllFromGroupDB(app, event.sender.group, "GroupPermission", "AdminID")
+    admin = GetAllFromGroupDB(app, event.sender.group,
+                              "GroupPermission", "AdminID")
     admin = "\n".join(map(lambda ad: str(ad[0]), admin))
     await app.sendGroupMessage(
         event.sender.group,
@@ -80,12 +81,12 @@ async def GroupAvailableAdmin(app: GraiaMiraiApplication, event: GroupMessage):
 
 
 def AddGroupAdminListener(bcc: Broadcast):
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#添加管理员")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#添加管理员")])(
         GroupAddAdmin
     )
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#解除管理员")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#解除管理员")])(
         GroupRemoveAdmin
     )
-    bcc.receiver("GroupMessage", headless_decoraters=[strictPlainCommand("#当前管理员")])(
+    bcc.receiver("GroupMessage", headless_decorators=[strictPlainCommand("#当前管理员")])(
         GroupAvailableAdmin
     )
