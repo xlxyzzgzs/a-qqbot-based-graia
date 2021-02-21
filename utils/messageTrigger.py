@@ -1,4 +1,4 @@
-from graia.application.entry import MessageChain, Plain
+from graia.application.entry import MessageChain, Plain, At
 from graia.broadcast.exceptions import ExecutionStop
 from graia.application.message.elements import InternalElement, ExternalElement
 from graia.broadcast.builtin.decorators import Depend
@@ -87,6 +87,24 @@ def regexPlain(param: str) -> callable:
             if t:
                 return t
         else:
+            raise ExecutionStop()
+
+    return func
+
+
+def AtTarget(param: int) -> callable:
+    """
+    used in headless_decotator
+    """
+
+    @Depend
+    def func(messageChain: MessageChain) -> NoReturn:
+        p = messageChain.get(At)
+        if not p or not reduce(
+            lambda a, b: bool(a or b),
+            map(lambda at: at.target == param, p),
+            False
+        ):
             raise ExecutionStop()
 
     return func
