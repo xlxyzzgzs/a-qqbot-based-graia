@@ -74,8 +74,9 @@ class CoolDownDispatcher(BaseDispatcher):
     def afterExecution(self, interface: IDispatcherInterface, exception: Optional[Exception], tb: Optional[TracebackType]):
         if isinstance(exception, ExecutionStop):
             return
-        self.result = False
-        self.local_storage[self.cool_down_id] = datetime.datetime.today()
+        if self.result:
+            self.result = False
+            self.local_storage[self.cool_down_id] = datetime.datetime.today()
 
     async def catch(self, interface: DispatcherInterface):
         if self.cool_down_target and self.cool_down_target == interface.name:
