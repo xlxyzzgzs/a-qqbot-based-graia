@@ -20,7 +20,7 @@ async def __get_permittee_from_database(db: aiosqlite.Connection, permission: Pe
         await cursor.execute('''
                 SELECT * FROM CommandPermission
                 WHERE PermissionId=?
-            ''', (permission.id))
+            ''', (permission.id,))
         async for row in cursor:
             yield PermitteeId(id=row[1], directParents=tuple())
 
@@ -30,7 +30,7 @@ async def __get_permission_from_database(db: aiosqlite.Connection, permittee: Pe
         await cursor.execute('''
                     SELECT * FROM CommandPermission
                     WHERE PermissionId=?
-                ''', (permittee.id))
+                ''', (permittee.id,))
         async for row in cursor:
             yield await load_permission_from_dataBase(db, row[0])
 
@@ -43,7 +43,7 @@ async def __set_permission_with_permittee(db: aiosqlite.Connection, permission: 
             cursor.execute('''
                 INSERT INTO CommandPermission (PermissionId,PermitteeId)
                 VALUES (?,?)
-            ''', permission.id, permittee.id)
+            ''', (permission.id, permittee.id))
     except:
         await db.rollback()
         raise
