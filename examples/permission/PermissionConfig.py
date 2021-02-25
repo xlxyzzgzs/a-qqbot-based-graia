@@ -1,0 +1,2 @@
+DATEBASE_PATH: str = "CommandPermission.db"
+DEFAULT_ROOT_PERMISSION_USER: int = 1010594446

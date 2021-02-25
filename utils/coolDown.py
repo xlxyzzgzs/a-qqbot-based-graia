@@ -19,6 +19,8 @@ class CoolDownDecorator(Decorator):
         last_time = interface.local_storage.get(self.cool_down_id)
         time = datetime.datetime.today()
         if last_time and time - last_time <= self.cool_down_time:
+            if interface.name:
+                return False
             raise ExecutionStop()
         interface.local_storage[self.cool_down_id] = time
         return True
@@ -27,6 +29,8 @@ class CoolDownDecorator(Decorator):
 class CoolDownDispatcher(BaseDispatcher):
     always = True
     local_storage: Dict[Any, Any] = {}
+    cool_down_time: datetime.timedelta
+    cool_down_id: Any
 
     def __init__(self, cool_down_time: datetime.timedelta, cool_down_id: Any, target_name: str):
         self.cool_down_time = cool_down_time
@@ -37,15 +41,12 @@ class CoolDownDispatcher(BaseDispatcher):
     def beforeExecution(self, interface: IDispatcherInterface):
         last_time = self.local_storage.get(self.cool_down_id)
         time = datetime.datetime.today()
-        if last_time and time - last_time <= self.cool_down_time:
-            self.result = False
-        else:
+        self.result = False
+        if not last_time or time - last_time > self.cool_down_time:
             self.result = True
 
     def afterExecution(self, interface: IDispatcherInterface, exception: Optional[Exception], tb: Optional[TracebackType]):
-        if isinstance(exception, ExecutionStop):
-            return
-        if self.result:
+        if exception is None and self.result == True:
             self.result = False
             self.local_storage[self.cool_down_id] = datetime.datetime.today()
 

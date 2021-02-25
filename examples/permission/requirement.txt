@@ -1,0 +1,3 @@
+aiosqlite
+graia-application-mirai
+graia-broadcast
