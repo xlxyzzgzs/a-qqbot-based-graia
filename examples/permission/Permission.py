@@ -2,7 +2,7 @@ import aiosqlite
 import asyncio
 from pydantic import BaseModel
 from typing import Optional, Dict, Union, NoReturn, Sequence, List
-from .PermissionConfig import DEFAULT_ROOT_PERMISSION_USER, DATEBASE_PATH
+from .PermissionConfig import DEFAULT_ROOT_PERMISSION_USER, DATEBASE_PATH, ROOT_PERMISSION_ID
 """
 Permissions :
 ┌────────────┬───────────┬────────────────┐
@@ -45,11 +45,11 @@ class PermissionId(BaseModel):
 
     def get_all_parents(self):
         if not self.parent is None:
-            yield from self.parent.all_parents_with_self()
+            yield from self.parent.get_all_parents_with_self()
 
     def get_all_parents_with_self(self):
         yield self
-        yield from self.all_parents()
+        yield from self.get_all_parents()
 
     async def write_permission_into_dataBase(self, db: Optional[aiosqlite.Connection] = None):
         if db is None:
@@ -67,10 +67,10 @@ class PermissionCache():
 
 async def init_permission_database(db: aiosqlite.Connection):
     try:
-        global ROOT_PERMISSIONID
-        ROOT_PERMISSIONID = PermissionId(
-            id="ROOT_PERMISSION", description="ROOT_PERMISSION")
-        PermissionCache.permissions["ROOT_PERMISSION"] = ROOT_PERMISSIONID
+        global ROOT_PERMISSION
+        ROOT_PERMISSION = PermissionId(
+            id=ROOT_PERMISSION_ID, description="ROOT_PERMISSION")
+        PermissionCache.permissions[ROOT_PERMISSION_ID] = ROOT_PERMISSION
 
         await db.execute('''
             CREATE TABLE IF NOT EXISTS CommandPermission (
@@ -88,13 +88,13 @@ async def init_permission_database(db: aiosqlite.Connection):
         cursor = await db.execute('''
             SELECT PermissionId From CommandPermission
             WHERE PermissionId=?
-        ''', (ROOT_PERMISSIONID.id,))
+        ''', (ROOT_PERMISSION.id,))
         row = await cursor.fetchone()
         if not row:
             await db.execute('''
                 INSERT INTO CommandPermission (PermissionId,PermitteeId)
                 VALUES (?,?)
-            ''', (ROOT_PERMISSIONID.id, f"u{DEFAULT_ROOT_PERMISSION_USER}"))
+            ''', (ROOT_PERMISSION.id, DEFAULT_ROOT_PERMISSION_USER))
     except:
         await db.rollback()
         raise
@@ -102,7 +102,7 @@ async def init_permission_database(db: aiosqlite.Connection):
         await db.commit()
 
 
-async def __write_permission_into_dataBase(db: aiosqlite.Connection, id: str, description: str = "", parent: str = "ROOT_PERMISSION") -> NoReturn:
+async def __write_permission_into_dataBase(db: aiosqlite.Connection, id: str, description: str = "", parent: str = ROOT_PERMISSION_ID) -> NoReturn:
     try:
         async with db.cursor() as cursor:
             await cursor.execute('''
@@ -171,6 +171,8 @@ async def load_permission_from_dataBase(db: aiosqlite.Connection, id: str) -> Pe
 
 
 async def write_permission_into_dataBase(db: aiosqlite.Connection, permission: PermissionId) -> NoReturn:
+    if permission.id == ROOT_PERMISSION_ID:
+        return  # ROOT_PERMISSION is not changable
     await __write_permission_into_dataBase(db, permission.id, permission.description, permission.parent.id)
     PermissionCache.permissions[permission.id] = permission
     for perm_id in PermissionCache.permissions.keys():

@@ -40,7 +40,7 @@ async def __set_permission_with_permittee(db: aiosqlite.Connection, permission: 
         if await __check_permittee_permission(db, permission, permittee):
             return
         async with db.cursor() as cursor:
-            cursor.execute('''
+            await cursor.execute('''
                 INSERT INTO CommandPermission (PermissionId,PermitteeId)
                 VALUES (?,?)
             ''', (permission.id, permittee.id))
@@ -52,8 +52,8 @@ async def __set_permission_with_permittee(db: aiosqlite.Connection, permission: 
 
 
 async def check_permission(db: aiosqlite.Connection, permission: PermissionId, permittee: PermitteeId):
-    async for _permittee in permittee.get_all_parents_with_self():
-        async for _permission in permission.get_all_parents_with_self():
-            if await __check_permittee_permission(db, _permission.id, _permittee.id):
+    for _permittee in permittee.get_all_parents_with_self():
+        for _permission in permission.get_all_parents_with_self():
+            if await __check_permittee_permission(db, _permission, _permittee):
                 return True
     return False

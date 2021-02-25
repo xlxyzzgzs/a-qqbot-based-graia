@@ -95,11 +95,11 @@ class PermitteeId(BaseModel):
 
     def get_all_parents(self):
         for p in self.directParents:
-            yield from p.all_parents_with_self()
+            yield from p.get_all_parents_with_self()
 
     def get_all_parents_with_self(self):
         yield self
-        yield from self.all_parents()
+        yield from self.get_all_parents()
 
 
 PermitteeId.update_forward_refs()

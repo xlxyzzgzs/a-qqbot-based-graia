@@ -2,7 +2,7 @@ from graia.broadcast.interfaces.decorator import Decorator, DecoratorInterface
 from graia.broadcast.interfaces.dispatcher import DispatcherInterface, BaseDispatcher
 from graia.broadcast.exceptions import ExecutionStop
 from graia.application.entry import FriendMessage, GroupMessage, TempMessage
-from typing import Optional
+from typing import Optional, NoReturn
 import aiosqlite
 from .PermissionConfig import DATEBASE_PATH
 from .Permission import load_permission_from_dataBase, PermissionId, PermissionCache, write_permission_into_dataBase, init_permission_database
@@ -36,7 +36,7 @@ class MessagePermissionCheckDecorator(Decorator):
         if self.need_load_from_database:
             self.need_load_from_database = False
             await self.__load_permission_from_dataBase()
-        self.permission = PermissionCache.get(self.permission_id)
+        self.permission = PermissionCache.permissions.get(self.permission_id)
         async with aiosqlite.connect(DATEBASE_PATH) as db:
             if await check_permission(db, self.permission, self.__make_permittee(interface.event)):
                 return True
@@ -62,7 +62,7 @@ class MessagePermissionCheckDecorator(Decorator):
             if not self.permission_parent_id is None:
                 p_perm = await load_permission_from_dataBase(db, self.permission_parent_id)
                 self.permission.parent = p_perm
-            write_permission_into_dataBase(db, self.permission)
+            await write_permission_into_dataBase(db, self.permission)
 
 
 class MessagePermissionCheckDispatcher(BaseDispatcher):
@@ -89,12 +89,13 @@ class MessagePermissionCheckDispatcher(BaseDispatcher):
         if self.need_load_from_database:
             self.need_load_from_database = False
             await self.__load_permission_from_dataBase()
-        self.permission = PermissionCache.get(self.permission_id)
+        self.permission = PermissionCache.permissions.get(self.permission_id)
         async with aiosqlite.connect(DATEBASE_PATH) as db:
             if await check_permission(db, self.permission, self.__make_permittee(interface.event)):
                 self.allow = True
 
     async def catch(self, interface: DispatcherInterface):
+        print(self.target_name, interface.name)
         if self.target_name and interface.name == self.target_name:
             return self.allow
 
@@ -116,7 +117,7 @@ class MessagePermissionCheckDispatcher(BaseDispatcher):
             if not self.permission_parent_id is None:
                 p_perm = await load_permission_from_dataBase(db, self.permission_parent_id)
                 self.permission.parent = p_perm
-            write_permission_into_dataBase(db, self.permission)
+            await write_permission_into_dataBase(db, self.permission)
 
 
 async def set_permission_with_permittee(permission_id: str, permittee_id: str):
@@ -124,7 +125,7 @@ async def set_permission_with_permittee(permission_id: str, permittee_id: str):
         try:
             permission = await load_permission_from_dataBase(db, permission_id)
             permittee = str_to_permittee(permittee_id)
-            __set_permission_with_permittee(db, permission, permittee)
+            await __set_permission_with_permittee(db, permission, permittee)
         except:
             await db.rollback()
             raise

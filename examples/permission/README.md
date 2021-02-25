@@ -94,4 +94,4 @@ async def __init_database():
 3. 那就可以用了。可以在 `headless_decorator` 中使用 `MessagePermissionCheckDecorator`，也可以在 `dispatcher` 中
 使用 `MessagePermissionCheckDispatcher`
 
-3. 其余请参考
+3. 其余请参考 `../permission_test.py`
