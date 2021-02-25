@@ -95,7 +95,6 @@ class MessagePermissionCheckDispatcher(BaseDispatcher):
                 self.allow = True
 
     async def catch(self, interface: DispatcherInterface):
-        print(self.target_name, interface.name)
         if self.target_name and interface.name == self.target_name:
             return self.allow
 
