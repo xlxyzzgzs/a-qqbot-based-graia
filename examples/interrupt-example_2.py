@@ -60,8 +60,9 @@ async def main():
         await asyncio.sleep(1)
         if friendId >= 10:
             break
-    print(f"{friendId} send and leave postevent")
     await asyncio.sleep(1)
+    print(f"{friendId} send and leave postevent")
+    await asyncio.sleep(5)
     print(len(inc.broadcast.listeners))
 
 event_loop.run_until_complete(asyncio.wait([main()]))
