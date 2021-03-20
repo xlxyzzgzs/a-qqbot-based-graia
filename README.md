@@ -2,6 +2,8 @@
 一个基于 graia-application 编写的qqbot <br/>
 根据AGPL 3.0,源码放在了这里. <br/> 
 
+由于该项目不再使用，预计将在转换成saya之后暂停更新。
+
 ```
 pip install graia-application-mirai --upgrade 
 pip install graia-broadcast --upgrade
